@@ -42,18 +42,18 @@ import java.util.ArrayDeque;
 class Canvas205 extends JComponent{
 
 	private static final long serialVersionUID = 1L;
-	
+
 	public static final int CANVAS_SIZE_X = 800;
 	public static final int CANVAS_SIZE_Y = 600;
 
 	private int LS_iterations = 0;
 	LSystem L_system;
 
-	
+
 
 	public Canvas205(LSystem L){
 		L_system = L;
-		
+
 		setDoubleBuffered(true);
 		setSize(CANVAS_SIZE_X,CANVAS_SIZE_Y);
 		addMouseListener(new MouseAdapter() {
@@ -99,37 +99,37 @@ class Canvas205 extends JComponent{
 	private int canvasHeight(){
 		return CANVAS_SIZE_Y;
 	}
-	
+
 	/* Event handlers and drawing functions */
-	
+
 	private void handleMouseDown(int x, int y, int button_number){
-		
-		//Reject the point if it's out of bounds
-		if (x < 0 || x >= canvasWidth())
-			return;
-		if (y < 0 || y >= canvasHeight())
-			return;	
-	}		
-	
 
-	private void handleMouseUp(int x, int y, int button_number){
-		
-		//Reject the point if it's out of bounds
-		if (x < 0 || x >= canvasWidth())
-			return;
-		if (y < 0 || y >= canvasHeight())
-			return;
-	}		
-
-	private void handleMouseMove(int x, int y){
-		
 		//Reject the point if it's out of bounds
 		if (x < 0 || x >= canvasWidth())
 			return;
 		if (y < 0 || y >= canvasHeight())
 			return;
 	}
-	
+
+
+	private void handleMouseUp(int x, int y, int button_number){
+
+		//Reject the point if it's out of bounds
+		if (x < 0 || x >= canvasWidth())
+			return;
+		if (y < 0 || y >= canvasHeight())
+			return;
+	}
+
+	private void handleMouseMove(int x, int y){
+
+		//Reject the point if it's out of bounds
+		if (x < 0 || x >= canvasWidth())
+			return;
+		if (y < 0 || y >= canvasHeight())
+			return;
+	}
+
 	private void HandleKeyDown(KeyEvent e){
 		int keyCode = e.getKeyCode();
 		if (keyCode == KeyEvent.VK_UP){
@@ -139,46 +139,46 @@ class Canvas205 extends JComponent{
 		}
 		repaint();
 	}
-	
+
 	private void HandleKeyUp(KeyEvent e){
 		int keyCode = e.getKeyCode();
 	}
-	
 
-	
+
+
 	public void drawFrame(double frame_delta_ms){
 
 		double frame_delta_seconds = frame_delta_ms/1000.0;
 
 		//repaint(); //This results in the paintComponent method below being called.
 	}
-	
+
 	@Override
 	public void paintComponent(Graphics g){
-		super.paintComponent(g);		
+		super.paintComponent(g);
 		Graphics2D g2d = (Graphics2D)g;
 		g2d.setColor(new Color(0,0,0));
 		g2d.fillRect(0,0,canvasWidth(),canvasHeight());
-		
-		
+
+
 		System.out.println("Drawing with "+LS_iterations+" iterations");
 		String SystemString = L_system.GenerateSystemString(LS_iterations);
 		System.out.println("System String: "+SystemString);
-		
-		
+
+
 		AffineTransform viewportTransform = new AffineTransform();
 		viewportTransform.concatenate(Translation(CANVAS_SIZE_X/2, CANVAS_SIZE_Y));
 		viewportTransform.concatenate(Scale(1, -1));
 		viewportTransform.concatenate(Scale(CANVAS_SIZE_X/100.0, CANVAS_SIZE_Y/100.0));
 		g2d.setTransform(viewportTransform);
-	
+
 		//Replace this with actual drawing code...
 		draw_leaf(g2d);
 
-		
+
 
 	}
-	
+
 	private AffineTransform Rotation(double radians){
 		return AffineTransform.getRotateInstance(radians);
 	}
@@ -191,7 +191,7 @@ class Canvas205 extends JComponent{
 	private AffineTransform Copy(AffineTransform T){
 		return new AffineTransform(T);
 	}
-	
+
 	private void draw_leaf(Graphics2D g){
 		double[] vx = {0,1.0 ,1.25,   1,  0,  -1,-1.25,-1};
 		double[] vy = {0,0.75,1.75,2.75,4.0,2.75, 1.75,0.75};
@@ -208,8 +208,8 @@ class Canvas205 extends JComponent{
 		g.setStroke(new BasicStroke(0.25f));
 		g.draw(P);
 	}
-	
-	
+
+
 }
 
 
@@ -218,24 +218,24 @@ public class LSViewer {
 
 	private Canvas205 canvas;
 	private JFrame viewerWindow;
-	
-	
+
+
 	private LSViewer(LSystem L) {
 		initialize(L);
 	}
-	
+
 
 	private void initialize(LSystem L) {
 		viewerWindow = new JFrame();
 		viewerWindow.setTitle("CSC 205 - Spring 2016");
 		viewerWindow.setBounds(100, 100, canvas.CANVAS_SIZE_X, canvas.CANVAS_SIZE_Y+25);
 		viewerWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
+
 		canvas = new Canvas205(L);
 		viewerWindow.getContentPane().add(canvas, BorderLayout.CENTER);
-		
+
 	}
-	
+
 	private void start_render_loop(){
 		Thread t = new Thread()
 		{
@@ -250,23 +250,28 @@ public class LSViewer {
 		};
 		t.start();
 	}
-	
+
 	private void frame_loop(){
 		//nanoTime returns the time in nanoseconds (so divide by 1000000000 to recover the time in seconds)
 		long last_frame = System.nanoTime();
-		while (true){
+		while(true) {
 			long this_frame = System.nanoTime();
 			long frame_delta = this_frame-last_frame;
-			
+
 			//Convert the frame delta to milliseconds
 			double frame_delta_ms = frame_delta/1000000.0;
 			canvas.drawFrame(frame_delta_ms);
 			last_frame = this_frame;
+			try {
+				Thread.sleep(50);  // Added to save the CPU
+			} catch (Exception e) {
+				System.out.println("Warn: Sleep interrupted");
+			}
 		}
 	}
-	
-	
-	
+
+
+
 	public static void spawn(final LSystem L) {
 		java.awt.EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -280,7 +285,7 @@ public class LSViewer {
 			}
 		});
 	}
-	
+
 	public static void main(String[] args){
 		if (args.length < 1){
 			System.err.println("Usage: java LSViewer <input file>");
@@ -294,7 +299,7 @@ public class LSViewer {
 		}
 		spawn(L);
 	}
-	
+
 	/* Prints an error message and exits (intended for user errors) */
 	private static void ErrorExit(String errorMessage, Object... formatArgs){
 		System.err.printf("ERROR: " + errorMessage + "\n",formatArgs);
@@ -306,4 +311,3 @@ public class LSViewer {
 	}
 
 }
-

@@ -1,3 +1,3 @@
 javac *.java -d bin
 cd bin
-java LSViewer
+java LSViewer input.txt
