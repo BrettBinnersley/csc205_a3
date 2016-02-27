@@ -20,6 +20,7 @@ import java.awt.event.MouseWheelListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.FlowLayout;
 import java.awt.geom.*;
+import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -41,6 +42,11 @@ class Canvas205 extends JComponent {
 
 	public static final int CANVAS_SIZE_X = 800;
 	public static final int CANVAS_SIZE_Y = 600;
+
+
+	// Hardcoded constants
+	public static final int height = 5;  // arbitrarily chosen value that fits on the screen using our scales.
+	public static final int numberTrees = 4;
 
 	private int LS_iterations = 0;
 	LSystem L_system;
@@ -159,95 +165,115 @@ class Canvas205 extends JComponent {
 		String SystemString = L_system.GenerateSystemString(LS_iterations);
 		System.out.println("System String: "+SystemString);
 
+		for (int treenum = 1; treenum<=numberTrees; ++treenum) {
 
-		AffineTransform viewportTransform = new AffineTransform();
-		viewportTransform.concatenate(Translation(CANVAS_SIZE_X/2, CANVAS_SIZE_Y));
-		viewportTransform.concatenate(Scale(1, -1));
-		viewportTransform.concatenate(Scale(CANVAS_SIZE_X/100.0, CANVAS_SIZE_Y/100.0));
-		g2d.setTransform(viewportTransform);
+			double tx = CANVAS_SIZE_X * ((double)treenum / (double)(numberTrees + 1));
+			double ty = CANVAS_SIZE_Y;
 
-		// Height
-		int height = 7;  // arbitrarily chosen value that fits on the screen using our scales.
+			AffineTransform viewportTransform = new AffineTransform();
+			viewportTransform.concatenate(Translation(tx, ty));
+			viewportTransform.concatenate(Scale(1, -1));
 
-		// Coordinate States
-		ArrayList<AffineTransform> coord_states = new ArrayList<AffineTransform>();
-		AffineTransform t;
-		char[] arr = SystemString.toCharArray();
-		for (char c : arr) {
-			switch (c) {
-				case 'L':  // Draw Leaf
-					t = g2d.getTransform();
-					g2d.setTransform(viewportTransform);
-					draw_leaf(g2d);
-					g2d.setTransform(t);  // reset transform
-				break;
-
-				case 'T':  // Draw a stem
-					// Draw stem.
-					g2d.setTransform(viewportTransform);
-
-					double[] vx = {-0.25, -0.25, 0.25, 0.25};
-					double[] vy = {0, height, height, 0};
-					int numVerts = 4;
-					//We can't use a 'Polygon' object since those require integer coordinates
-					//Instead, a Path2D (which generalizes a polygon) can be used instead.
-					Path2D.Double P = new Path2D.Double();
-					P.moveTo(vx[0],vy[0]);
-					for (int i = 1; i < numVerts; i++)
-						P.lineTo(vx[i],vy[i]);
-					g2d.setColor(new Color(165, 42, 42));
-					g2d.fill(P);
-					g2d.setColor(new Color(64, 128, 0));
-					g2d.setStroke(new BasicStroke(0.25f));
-					g2d.draw(P);
-
-					// New transform.
-					viewportTransform.translate(0, height);
-
-				break;
-
-				case '+':
-					viewportTransform.rotate(DegreeToRad(30.0));
-				break;
-
-				case '-':
-					viewportTransform.rotate(DegreeToRad(-30.0));
-				break;
-
-				case 's':
-					viewportTransform.scale(0.9, 0.9);
-				break;
-
-				case 'S':
-					viewportTransform.scale(1.0 / 0.9, 1.0 / 0.9);
-				break;
-
-				case 'h':
-					viewportTransform.scale(0.9, 1.0);
-				break;
-
-				case 'H':
-					viewportTransform.scale(1.0 / 0.9, 1.0);
-				break;
-
-				case 'v':
-					viewportTransform.scale(1.0 , 0.9);
-				break;
-
-				case 'V':
-					viewportTransform.scale(1.0, 1.0 / 0.9);
-				break;
-
-				case '[':  // Save a copy of the current state
-					coord_states.add(Copy(viewportTransform));
-				break;
-
-				case ']':  // Update the new state
-					viewportTransform = coord_states.get(coord_states.size() - 1);
-					coord_states.remove(coord_states.size() - 1);
-				break;
+			viewportTransform.concatenate(Scale(((double)treenum / (double)(numberTrees)), 1));
+			if (treenum == 2) {
+				viewportTransform.concatenate(Scale(4, 4));
 			}
-		}
+
+
+			viewportTransform.concatenate(Scale(CANVAS_SIZE_X/100.0, CANVAS_SIZE_Y/100.0));
+
+			// Different size tree
+
+
+			g2d.setTransform(viewportTransform);
+
+			// Coordinate States
+			ArrayList<AffineTransform> coord_states = new ArrayList<AffineTransform>();
+			AffineTransform t;
+			char[] arr = SystemString.toCharArray();
+		  float iterNumber = 0.0f;
+			for (char c : arr) {
+				switch (c) {
+					case 'L':  // Draw Leaf
+						t = g2d.getTransform();
+						g2d.setTransform(viewportTransform);
+						draw_leaf(g2d);
+						g2d.setTransform(t);  // reset transform
+					break;
+
+					case 'T':  // Draw a stem
+						// Draw stem.
+						g2d.setTransform(viewportTransform);
+
+						double[] vx = {-0.25, -0.25, 0.25, 0.25};
+						double[] vy = {0, height, height, 0};
+						int numVerts = 4;
+						//We can't use a 'Polygon' object since those require integer coordinates
+						//Instead, a Path2D (which generalizes a polygon) can be used instead.
+						Path2D.Double P = new Path2D.Double();
+						P.moveTo(vx[0],vy[0]);
+						for (int i = 1; i < numVerts; i++)
+							P.lineTo(vx[i],vy[i]);
+						// g2d.setColor(new Color(165, 42, 42));
+						g2d.setColor(new Color(64, 128, 0));
+						g2d.setStroke(new BasicStroke(0.25f));
+
+						Color col1 = new Color(205, 175, 149);
+						Color col2 = new Color(139, 119, 101);
+
+						GradientPaint paint = new GradientPaint(0, 0, col1, 0, height, col2);
+						g2d.setPaint(paint);
+						g2d.fill(P);
+						g2d.draw(P);
+
+						// New transform.
+						viewportTransform.translate(0, height);
+
+					break;
+
+					case '+':
+						viewportTransform.rotate(DegreeToRad(30.0));
+					break;
+
+					case '-':
+						viewportTransform.rotate(DegreeToRad(-30.0));
+					break;
+
+					case 's':
+						viewportTransform.scale(0.9, 0.9);
+					break;
+
+					case 'S':
+						viewportTransform.scale(1.0 / 0.9, 1.0 / 0.9);
+					break;
+
+					case 'h':
+						viewportTransform.scale(0.9, 1.0);
+					break;
+
+					case 'H':
+						viewportTransform.scale(1.0 / 0.9, 1.0);
+					break;
+
+					case 'v':
+						viewportTransform.scale(1.0 , 0.9);
+					break;
+
+					case 'V':
+						viewportTransform.scale(1.0, 1.0 / 0.9);
+					break;
+
+					case '[':  // Save a copy of the current state
+						coord_states.add(Copy(viewportTransform));
+					break;
+
+					case ']':  // Update the new state
+						viewportTransform = coord_states.get(coord_states.size() - 1);
+						coord_states.remove(coord_states.size() - 1);
+					break;
+				}
+			}  // End with the characters loop
+		}  // End Loop here
 	}
 
 	private AffineTransform Rotation(double radians){
@@ -279,7 +305,12 @@ class Canvas205 extends JComponent {
 		P.moveTo(vx[0],vy[0]);
 		for (int i = 1; i < numVerts; i++)
 			P.lineTo(vx[i],vy[i]);
-		g.setColor(new Color(64,224,0));
+		// g.setColor(new Color(64,224,0));
+
+		Color col1 = new Color(0, 50, 0);
+		Color col2 = new Color(30, 255, 30);
+		GradientPaint paint = new GradientPaint(0, 0, col1, 0, 4, col2);
+		g.setPaint(paint);
 		g.fill(P);
 		g.setColor(new Color(64, 128, 0));
 		g.setStroke(new BasicStroke(0.25f));
