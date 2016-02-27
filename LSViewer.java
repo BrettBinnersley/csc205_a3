@@ -167,22 +167,43 @@ class Canvas205 extends JComponent {
 		g2d.setTransform(viewportTransform);
 
 		// Height
-		int height = 10;
+		int height = 7;  // arbitrarily chosen value that fits on the screen using our scales.
 
 		// Coordinate States
 		ArrayList<AffineTransform> coord_states = new ArrayList<AffineTransform>();
+		AffineTransform t;
 		char[] arr = SystemString.toCharArray();
 		for (char c : arr) {
 			switch (c) {
 				case 'L':  // Draw Leaf
+					t = g2d.getTransform();
 					g2d.setTransform(viewportTransform);
 					draw_leaf(g2d);
+					g2d.setTransform(t);  // reset transform
 				break;
 
 				case 'T':  // Draw a stem
 					// Draw stem.
+					g2d.setTransform(viewportTransform);
 
+					double[] vx = {-0.25, -0.25, 0.25, 0.25};
+					double[] vy = {0, height, height, 0};
+					int numVerts = 4;
+					//We can't use a 'Polygon' object since those require integer coordinates
+					//Instead, a Path2D (which generalizes a polygon) can be used instead.
+					Path2D.Double P = new Path2D.Double();
+					P.moveTo(vx[0],vy[0]);
+					for (int i = 1; i < numVerts; i++)
+						P.lineTo(vx[i],vy[i]);
+					g2d.setColor(new Color(165, 42, 42));
+					g2d.fill(P);
+					g2d.setColor(new Color(64, 128, 0));
+					g2d.setStroke(new BasicStroke(0.25f));
+					g2d.draw(P);
+
+					// New transform.
 					viewportTransform.translate(0, height);
+
 				break;
 
 				case '+':
@@ -264,8 +285,6 @@ class Canvas205 extends JComponent {
 		g.setStroke(new BasicStroke(0.25f));
 		g.draw(P);
 	}
-
-
 }
 
 /*************************
