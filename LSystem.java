@@ -3,6 +3,9 @@
    A parser for L-Systems.
 
    B. Bird - 02/09/2016
+
+	 This file has been included unedited, with the Exception
+	 of adding this comment.
 */
 
 import java.util.regex.*;
@@ -11,17 +14,17 @@ import java.util.ArrayList;
 import java.io.File;
 
 
-public class LSystem{
+public class LSystem {
 
 	private static final int FLAG_EVEN = 1;
 	private static final int FLAG_ODD = 2;
 
-	private static class Rule{
+	private static class Rule {
 		char rule;
 		String substitution;
 		int lifetime;
 		int flags;
-		
+
 		public Rule(char rule_char, String substitution, int lifetime, int flags){
 			this.rule = rule_char;
 			this.substitution = substitution;
@@ -29,16 +32,16 @@ public class LSystem{
 			this.flags = flags;
 		}
 	}
-	
+
 	private LSystem(){
 		axiom = null;
 		rules = new ArrayList<Rule>();
 	}
-	
+
 	private String axiom;
 	private ArrayList<Rule> rules;
-	
-	
+
+
 	private String GenerateRecursive(int max_iterations, int current_iteration, String input){
 		String output_string = "";
 		for (int i = 0; i < input.length(); i++){
@@ -65,11 +68,11 @@ public class LSystem{
 		}
 		return output_string;
 	}
-	
+
 	public String GenerateSystemString(int iterations){
 		return GenerateRecursive(iterations, 0, axiom);
 	}
-	
+
 	public static LSystem ParseFile(String filename){
 		Scanner s;
 		try{
@@ -79,12 +82,12 @@ public class LSystem{
 			return null;
 		}
 		LSystem L = new LSystem();
-		
+
 		L.axiom = null;
-		
+
 		String patternString = "\\s*([0-9]+)?\\s*([%^]+)?\\s*([A-Za-z\\[\\]])\\s*=\\s*(.*)";
 		Pattern P = Pattern.compile(patternString);
-		
+
 		while(s.hasNextLine()){
 			String line = s.nextLine().trim();
 			if (line.equals("") || line.charAt(0) == '#')
@@ -123,5 +126,5 @@ public class LSystem{
 			return null;
 		return L;
 	}
-	
+
 }

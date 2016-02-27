@@ -1,45 +1,41 @@
 /* LSViewer.java
 
    B. Bird - 02/09/2016
+
+	 Edited for the purposes of our Csc 205 assignment.
+	 Brett Binnersley
+	 V00776751
 */
 
-import java.awt.Color;
-import java.awt.Point;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.awt.geom.*;
 import java.awt.BasicStroke;
-
-import javax.swing.JFrame;
-
 import java.awt.BorderLayout;
-import java.awt.FlowLayout;
-import javax.swing.JComponent;
-
+import java.awt.Color;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-
-
 import java.awt.event.MouseWheelListener;
 import java.awt.event.MouseWheelEvent;
-import javax.swing.Action;
+import java.awt.FlowLayout;
+import java.awt.geom.*;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Rectangle;
+
 import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
 import javax.swing.KeyStroke;
 
 import java.util.ArrayList;
 import java.util.ArrayDeque;
 
 
-
-
-
-
-class Canvas205 extends JComponent{
+class Canvas205 extends JComponent {
 
 	private static final long serialVersionUID = 1L;
 
@@ -49,9 +45,7 @@ class Canvas205 extends JComponent{
 	private int LS_iterations = 0;
 	LSystem L_system;
 
-
-
-	public Canvas205(LSystem L){
+	public Canvas205(LSystem L) {
 		L_system = L;
 
 		setDoubleBuffered(true);
@@ -147,12 +141,12 @@ class Canvas205 extends JComponent{
 
 
 	public void drawFrame(double frame_delta_ms){
-
 		double frame_delta_seconds = frame_delta_ms/1000.0;
-
-		//repaint(); //This results in the paintComponent method below being called.
+		// repaint(); //This results in the paintComponent method below being called.
 	}
 
+
+	// ONLY NEED TO EDIT THIS METHOD HERE.
 	@Override
 	public void paintComponent(Graphics g){
 		super.paintComponent(g);
@@ -172,11 +166,67 @@ class Canvas205 extends JComponent{
 		viewportTransform.concatenate(Scale(CANVAS_SIZE_X/100.0, CANVAS_SIZE_Y/100.0));
 		g2d.setTransform(viewportTransform);
 
-		//Replace this with actual drawing code...
-		draw_leaf(g2d);
+		// Height
+		int height = 10;
 
+		// Coordinate States
+		ArrayList<AffineTransform> coord_states = new ArrayList<AffineTransform>();
+		char[] arr = SystemString.toCharArray();
+		for (char c : arr) {
+			switch (c) {
+				case 'L':  // Draw Leaf
+					g2d.setTransform(viewportTransform);
+					draw_leaf(g2d);
+				break;
 
+				case 'T':  // Draw a stem
+					// Draw stem.
 
+					viewportTransform.translate(0, height);
+				break;
+
+				case '+':
+					viewportTransform.rotate(DegreeToRad(30.0));
+				break;
+
+				case '-':
+					viewportTransform.rotate(DegreeToRad(-30.0));
+				break;
+
+				case 's':
+					viewportTransform.scale(0.9, 0.9);
+				break;
+
+				case 'S':
+					viewportTransform.scale(1.0 / 0.9, 1.0 / 0.9);
+				break;
+
+				case 'h':
+					viewportTransform.scale(0.9, 1.0);
+				break;
+
+				case 'H':
+					viewportTransform.scale(1.0 / 0.9, 1.0);
+				break;
+
+				case 'v':
+					viewportTransform.scale(1.0 , 0.9);
+				break;
+
+				case 'V':
+					viewportTransform.scale(1.0, 1.0 / 0.9);
+				break;
+
+				case '[':  // Save a copy of the current state
+					coord_states.add(Copy(viewportTransform));
+				break;
+
+				case ']':  // Update the new state
+					viewportTransform = coord_states.get(coord_states.size() - 1);
+					coord_states.remove(coord_states.size() - 1);
+				break;
+			}
+		}
 	}
 
 	private AffineTransform Rotation(double radians){
@@ -190,6 +240,12 @@ class Canvas205 extends JComponent{
 	}
 	private AffineTransform Copy(AffineTransform T){
 		return new AffineTransform(T);
+	}
+	private double DegreeToRad(double degree) {
+		return degree * Math.PI / 180.0;
+	}
+	private double RadToDegree(double rad) {
+		return rad * 180.0 / Math.PI;
 	}
 
 	private void draw_leaf(Graphics2D g){
@@ -212,18 +268,16 @@ class Canvas205 extends JComponent{
 
 }
 
-
+/*************************
+Do not need to edit below.
+**************************/
 
 public class LSViewer {
-
 	private Canvas205 canvas;
 	private JFrame viewerWindow;
-
-
 	private LSViewer(LSystem L) {
 		initialize(L);
 	}
-
 
 	private void initialize(LSystem L) {
 		viewerWindow = new JFrame();
@@ -233,7 +287,6 @@ public class LSViewer {
 
 		canvas = new Canvas205(L);
 		viewerWindow.getContentPane().add(canvas, BorderLayout.CENTER);
-
 	}
 
 	private void start_render_loop(){
@@ -251,7 +304,7 @@ public class LSViewer {
 		t.start();
 	}
 
-	private void frame_loop(){
+	private void frame_loop() {
 		//nanoTime returns the time in nanoseconds (so divide by 1000000000 to recover the time in seconds)
 		long last_frame = System.nanoTime();
 		while(true) {
@@ -270,8 +323,6 @@ public class LSViewer {
 		}
 	}
 
-
-
 	public static void spawn(final LSystem L) {
 		java.awt.EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -286,14 +337,14 @@ public class LSViewer {
 		});
 	}
 
-	public static void main(String[] args){
-		if (args.length < 1){
+	public static void main(String[] args) {
+		if (args.length < 1) {
 			System.err.println("Usage: java LSViewer <input file>");
 			return;
 		}
 		String inputFile = args[0];
 		LSystem L = LSystem.ParseFile(inputFile);
-		if (L == null){
+		if (L == null) {
 			System.err.println("Unable to parse "+inputFile);
 			return;
 		}
